@@ -4,11 +4,11 @@ from decimal import Decimal
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from fastapi.testclient import TestClient
 from fastapi import HTTPException
+from fastapi.testclient import TestClient
 
 from main import app
-from models import Transaction, TransactionStatus, OperationType
+from models import OperationType, Transaction, TransactionStatus
 
 
 class TestGetWallet:
@@ -35,7 +35,9 @@ class TestGetWallet:
         mock_wallet.id = wallet_id
         mock_wallet.balance = Decimal("500.00")
 
-        with patch("routes.get_wallet", new_callable=AsyncMock, return_value=mock_wallet):
+        with patch(
+            "routes.get_wallet", new_callable=AsyncMock, return_value=mock_wallet
+        ):
             response = client.get(f"/api/v1/wallets/{wallet_id}")
             assert response.status_code == 200
             assert response.json()["balance"] == "500.00"
@@ -84,10 +86,14 @@ class TestWalletOperation:
             operation_type=OperationType.DEPOSIT,
             amount=Decimal("200.00"),
             status=TransactionStatus.SUCCESS,
-            created_at=datetime.now(timezone.utc)
+            created_at=datetime.now(timezone.utc),
         )
 
-        with patch("routes.change_balance", new_callable=AsyncMock, return_value=mock_transaction):
+        with patch(
+            "routes.change_balance",
+            new_callable=AsyncMock,
+            return_value=mock_transaction,
+        ):
             response = client.post(
                 f"/api/v1/wallets/{wallet_id}/operation",
                 json={"operation_type": "DEPOSIT", "amount": "200.00"},
@@ -109,7 +115,11 @@ class TestWalletOperation:
             created_at=datetime.now(timezone.utc),
         )
 
-        with patch("routes.change_balance", new_callable=AsyncMock, return_value=mock_transaction):
+        with patch(
+            "routes.change_balance",
+            new_callable=AsyncMock,
+            return_value=mock_transaction,
+        ):
             response = client.post(
                 f"/api/v1/wallets/{wallet_id}/operation",
                 json={"operation_type": "WITHDRAW", "amount": "100.00"},
@@ -121,7 +131,9 @@ class TestWalletOperation:
 
     def test_withdraw_insufficient(self, client):
         with patch("routes.change_balance", new_callable=AsyncMock) as mock:
-            mock.side_effect = HTTPException(status_code=400, detail="Insufficient funds")
+            mock.side_effect = HTTPException(
+                status_code=400, detail="Insufficient funds"
+            )
             response = client.post(
                 f"/api/v1/wallets/{uuid.uuid4()}/operation",
                 json={"operation_type": "WITHDRAW", "amount": "9999.00"},

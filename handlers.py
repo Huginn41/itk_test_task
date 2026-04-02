@@ -5,14 +5,12 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models import Wallet, Transaction, TransactionStatus
+from models import Transaction, TransactionStatus, Wallet
 from schema import OperationType
 
 
 async def get_wallet(db: AsyncSession, wallet_uuid: uuid.UUID) -> Wallet:
-    result = await db.execute(
-        select(Wallet).where(Wallet.id == wallet_uuid)
-    )
+    result = await db.execute(select(Wallet).where(Wallet.id == wallet_uuid))
     wallet = result.scalar_one_or_none()
 
     if wallet is None:
@@ -22,14 +20,13 @@ async def get_wallet(db: AsyncSession, wallet_uuid: uuid.UUID) -> Wallet:
 
 
 async def change_balance(
-        db: AsyncSession,
-        wallet_uuid: uuid.UUID,
-        operation_type: OperationType,
-        amount: Decimal,
+    db: AsyncSession,
+    wallet_uuid: uuid.UUID,
+    operation_type: OperationType,
+    amount: Decimal,
 ) -> Transaction:
     result = await db.execute(
-        select(Wallet).where(Wallet.id == wallet_uuid)
-        .with_for_update()
+        select(Wallet).where(Wallet.id == wallet_uuid).with_for_update()
     )
     wallet = result.scalar_one_or_none()
 

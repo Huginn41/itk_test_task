@@ -3,8 +3,8 @@ from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 
-from sqlalchemy import DateTime, Numeric, UUID, ForeignKey, func
-from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, relationship
+from sqlalchemy import UUID, DateTime, ForeignKey, Numeric, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
@@ -53,9 +53,7 @@ class Transaction(Base):
     )
 
     wallet_uuid: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("wallets.id", ondelete="CASCADE"),
-        nullable=False
+        UUID(as_uuid=True), ForeignKey("wallets.id", ondelete="CASCADE"), nullable=False
     )
 
     operation_type: Mapped[OperationType] = mapped_column(
@@ -73,8 +71,7 @@ class Transaction(Base):
     )
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=func.now()
+        DateTime(timezone=True), server_default=func.now()
     )
 
     wallet: Mapped[Wallet] = relationship(
